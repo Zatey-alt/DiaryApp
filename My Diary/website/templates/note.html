@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/note.css') }}">
+    <title>Notes</title>
+</head>
+<body>
+    <h2>Welcome, {{ current_user.username }}!</h2>
+    <p>Here are all your notes:</p>
+
+    <ul>
+        {% for note in current_user.notes %}
+        <div class="note-container">
+            <span class="note-icon">&#128221;</span> <!-- Add an icon for the note -->
+            <h3>{{ note.title }}</h3>
+            <p>{{ note.text }}</p>
+        </div>
+    {% endfor %}
+    </ul>
+
+    <form method="POST" action="{{ url_for('views.note') }}">
+      <h3>Add a new note:</h3>
+      <label for="title">Title:</label>
+      <input type="text" name="note_title">
+      <br>
+      <label for="note_text">Note:</label>
+      <textarea name="note_text"></textarea>
+      <br>
+      <button type="submit">Add Note</button>
+    </form>
+
+    <form method="POST" action="{{ url_for('views.delete_note') }}">
+      <h3>Delete a note:</h3>
+      <select name="note_id">
+        {% for note in current_user.notes %}
+          <option value="{{ note.id }}">{{ note.title }}</option>
+        {% endfor %}
+      </select>
+      <br>
+      <button type="submit">Delete Note</button>
+    </form>
+
+    <form action="{{ url_for('auth.logout') }}" method="POST">
+      <button type="submit">Log Out</button>
+    </form>
+    <script>const noteContainers = document.querySelectorAll('.note-container');
+
+        noteContainers.forEach(container => {
+          const noteText = container.querySelector('.note-text');
+          const deleteBtn = container.querySelector('.delete-note-btn');
+        
+          noteText.addEventListener('click', () => {
+            if (noteText.classList.contains('collapsed')) {
+              noteText.classList.remove('collapsed');
+              noteText.style.maxHeight = '200px';
+            } else {
+              noteText.classList.add('collapsed');
+              noteText.style.maxHeight = null;
+            }
+          });
+        
+          deleteBtn.addEventListener('click', () => {
+            const noteId = deleteBtn.dataset.noteId;
+            fetch(`/note/${noteId}/delete`, { method: 'POST' })
+              .then(() => container.remove())
+              .catch(error => console.error(error));
+          });
+        });
+        </script>
+</body>
+</html>
